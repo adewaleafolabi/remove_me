@@ -23,14 +23,11 @@ jobs:
       - name: Build, Push Helm Chart
         env:
           IMAGE_TAG: ${{ steps.set_version.outputs.tag }}
-
+        working-directory: ./xyz/etc/helm
         run: |-
           echo ${{steps.set_version.outputs.tag}}
-          cd xyz/etc/helm
-          
           sed -i "s/^version:.*$/version: ${{ steps.set_version.outputs.tag }}/" xyz/Chart.yaml
           sed -i "s/^appVersion:.*$/appVersion: \"${{ steps.set_version.outputs.tag }}\"/" xyz/Chart.yaml
-          
           cat xyz/Chart.yaml
 
 

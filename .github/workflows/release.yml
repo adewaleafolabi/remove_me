@@ -18,26 +18,18 @@ jobs:
         id: set_version
         with:
           script: |
-            console.log(JSON.stringify(context));
-            console.log(JSON.stringify(github));
-            const tag = context.payload.release.tag_name;
-            const no_v = tag.replace('v', '')
-            const dash_index = no_v.lastIndexOf('-')
-            const no_dash = (dash_index > -1) ?  no_v.substring(0, dash_index) : no_v
-            core.setOutput('tag', tag)
-            core.setOutput('no-v', no_v)
-            core.setOutput('no-dash', no_dash)
+            core.setOutput('tag', context.payload.release.tag_name.replace('v', ''));
 
       - name: Build, Push Helm Chart
         env:
-          IMAGE_TAG: ${{ steps.set_version.outputs.no-v }}
+          IMAGE_TAG: ${{ steps.set_version.outputs.tag }}
 
         run: |-
-          echo ${{steps.set_version.outputs.no-v}}
+          echo ${{steps.set_version.outputs.tag}}
           cd xyz/etc/helm
           
-          sed -i "s/^version:.*$/version: ${{ steps.set_version.outputs.no-v }}/" xyz/Chart.yaml
-          sed -i "s/^appVersion:.*$/appVersion: \"${{ steps.set_version.outputs.no-v }}\"/" xyz/Chart.yaml
+          sed -i "s/^version:.*$/version: ${{ steps.set_version.outputs.tag }}/" xyz/Chart.yaml
+          sed -i "s/^appVersion:.*$/appVersion: \"${{ steps.set_version.outputs.tag }}\"/" xyz/Chart.yaml
           
           cat xyz/Chart.yaml
 

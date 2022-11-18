@@ -20,28 +20,24 @@ jobs:
           script: |
             console.log(JSON.stringify(context));
             console.log(JSON.stringify(github));
-            const tag = context.ref.substring(10)
+            const tag = context.payload.release.tag_name;
             const no_v = tag.replace('v', '')
-
-            const no_v2 = github.event.release.tag_name.replace('v', '')
             const dash_index = no_v.lastIndexOf('-')
             const no_dash = (dash_index > -1) ?  no_v.substring(0, dash_index) : no_v
             core.setOutput('tag', tag)
             core.setOutput('no-v', no_v)
-            core.setOutput('no-v2', no_v2)
             core.setOutput('no-dash', no_dash)
 
       - name: Build, Push Helm Chart
         env:
-          IMAGE_TAG: ${{ github.event.release.tag_name }}
+          IMAGE_TAG: ${{ steps.set_version.outputs.no-v }}
 
         run: |-
           echo ${{steps.set_version.outputs.no-v}}
-          echo ${{steps.set_version.outputs.no-v2}}
           cd xyz/etc/helm
           
-          sed -i "s/^version:.*$/version: ${{ github.event.release.tag_name }}/" xyz/Chart.yaml
-          sed -i "s/^appVersion:.*$/appVersion: \"${{ github.event.release.tag_name }}\"/" xyz/Chart.yaml
+          sed -i "s/^version:.*$/version: ${{ steps.set_version.outputs.no-v }}/" xyz/Chart.yaml
+          sed -i "s/^appVersion:.*$/appVersion: \"${{ steps.set_version.outputs.no-v }}\"/" xyz/Chart.yaml
           
           cat xyz/Chart.yaml
 
